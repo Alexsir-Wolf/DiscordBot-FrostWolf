@@ -1,0 +1,10 @@
+﻿[*.cs]
+
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = suggestion
+
+# CA1416: Validate platform compatibility
+dotnet_diagnostic.CA1416.severity = none
+
+# DAH001: Type or member is obsolete
+dotnet_diagnostic.DAH001.severity = none

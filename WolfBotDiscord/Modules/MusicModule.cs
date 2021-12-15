@@ -19,8 +19,8 @@ namespace WolfBotDiscord.Modules
             _lavaNode = lavaNode;
         }
 
-        //JOIN
 
+        //JOIN
         [Command("Join")]
         public async Task JoinAsync()
         {
@@ -48,9 +48,8 @@ namespace WolfBotDiscord.Modules
             }
         }
 
+
         // SAIR DE SALA/CHAT
-
-
         [Command("leave")]
         [Alias("sair")]
         public async Task Leave()
@@ -70,8 +69,8 @@ namespace WolfBotDiscord.Modules
             }
         }
 
-        //PLAY + AUTO JOIN      
 
+        //PLAY + AUTO JOIN  
         [Command("Play")]
         public async Task PlayAsync([Remainder] string query)
         {
@@ -115,10 +114,10 @@ namespace WolfBotDiscord.Modules
 
         }
 
-        //PROXIMA MUSICA
 
+        //PROXIMA MUSICA
         [Command("proxima")]
-        [Alias("prox")]
+        [Alias("prox", "next")]
         public async Task Skip()
         {
             var voiceState = Context.User as IVoiceState;
@@ -147,8 +146,6 @@ namespace WolfBotDiscord.Modules
 
 
         //PAUSAR MUSICAS
-
-
         [Command("pause")]
         [Alias("pausa")]
         public async Task Pause()
@@ -177,8 +174,8 @@ namespace WolfBotDiscord.Modules
             }
         }
 
-        //RESUMIR A PARTIR DA PAUSA
 
+        //RESUMIR A PARTIR DA PAUSA
         [Command("resume")]
         [Alias("conti", "continuar")]
         public async Task Resume()

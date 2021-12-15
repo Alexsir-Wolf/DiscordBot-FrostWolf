@@ -48,6 +48,8 @@ namespace WolfBotDiscord.Modules
             }
         }
 
+        // SAIR DE SALA/CHAT
+
 
         [Command("leave")]
         [Alias("sair")]
@@ -68,7 +70,6 @@ namespace WolfBotDiscord.Modules
             }
         }
 
-
         //PLAY + AUTO JOIN      
 
         [Command("Play")]
@@ -83,44 +84,38 @@ namespace WolfBotDiscord.Modules
 
             if (!_lavaNode.HasPlayer(Context.Guild))
             {
-                try //AUTO JOIN NA SALA
-                {
-                    await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
-                    await ReplyAsync($"Entrei no chat : {voiceState.VoiceChannel.Name}!");
-                }
-                catch (Exception exception)
-                {
-                    await ReplyAsync(exception.Message);
-                }
+                await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
+                await ReplyAsync($"Entrei no chat : {voiceState.VoiceChannel.Name}!");
+            }
 
-                var searchResponse = await _lavaNode.SearchYouTubeAsync(query);
-                if (searchResponse.LoadStatus == LoadStatus.LoadFailed ||
-                    searchResponse.LoadStatus == LoadStatus.NoMatches)
-                {
-                    await ReplyAsync($"Não consegui encontrar nada para `{ query}`.");
-                    return;
-                }
+            var searchResponse = await _lavaNode.SearchYouTubeAsync(query);
+            if (searchResponse.LoadStatus == LoadStatus.LoadFailed ||
+                searchResponse.LoadStatus == LoadStatus.NoMatches)
+            {
+                await ReplyAsync($"Não consegui encontrar nada para `{ query}`.");
+                return;
+            }
+            var player = _lavaNode.GetPlayer(Context.Guild);
 
-                var player = _lavaNode.GetPlayer(Context.Guild);
+            if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused)
+            {
+                var track = searchResponse.Tracks[0];
+                player.Queue.Enqueue(track);
+                await ReplyAsync($"Na lista: {track.Title}");
 
-                if (player.PlayerState == Victoria.Enums.PlayerState.Playing || player.PlayerState == PlayerState.Paused)
-                {
-                    var track = searchResponse.Tracks[0];
-                    player.Queue.Enqueue(track);
-                    await ReplyAsync($"Na lista: {track.Title}");
+            }
+            else
+            {
+                var track = searchResponse.Tracks[0];
 
-                }
-                else
-                {
-                    var track = searchResponse.Tracks[0];
+                await player.PlayAsync(track);
 
-                    await player.PlayAsync(track);
-
-                    await ReplyAsync($"Tocando agora: {track.Title}");
-                }
+                await ReplyAsync($"Tocando agora: {track.Title}");
             }
 
         }
+
+        //PROXIMA MUSICA
 
         [Command("proxima")]
         [Alias("prox")]
@@ -151,8 +146,7 @@ namespace WolfBotDiscord.Modules
         }
 
 
-
-        //
+        //PAUSAR MUSICAS
 
 
         [Command("pause")]
@@ -183,7 +177,7 @@ namespace WolfBotDiscord.Modules
             }
         }
 
-        //
+        //RESUMIR A PARTIR DA PAUSA
 
         [Command("resume")]
         [Alias("conti", "continuar")]

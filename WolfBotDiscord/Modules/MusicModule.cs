@@ -7,6 +7,7 @@ using Victoria;
 using Victoria.Enums;
 
 using Victoria.EventArgs;
+using WolfBotDiscord.Common;
 
 namespace WolfBotDiscord.Modules
 {
@@ -21,7 +22,7 @@ namespace WolfBotDiscord.Modules
 
 
         //JOIN
-        [Command("Join")]
+        [Command("Join", RunMode = RunMode.Async)]
         public async Task JoinAsync()
         {
             if (_lavaNode.HasPlayer(Context.Guild))
@@ -50,7 +51,7 @@ namespace WolfBotDiscord.Modules
 
 
         // SAIR DE SALA/CHAT
-        [Command("leave")]
+        [Command("leave", RunMode = RunMode.Async)]
         [Alias("sair")]
         public async Task Leave()
         {
@@ -71,16 +72,10 @@ namespace WolfBotDiscord.Modules
 
 
         //PLAY + AUTO JOIN  
-        [Command("Play")]
+        [Command("Play", RunMode = RunMode.Async)]
         public async Task PlayAsync([Remainder] string query)
         {
             var voiceState = Context.User as IVoiceState;
-            if (string.IsNullOrWhiteSpace(query))
-            {
-                await ReplyAsync("Digite a música:");
-                return;
-            }
-
             if (!_lavaNode.HasPlayer(Context.Guild))
             {
                 await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
@@ -100,30 +95,39 @@ namespace WolfBotDiscord.Modules
             {
                 var track = searchResponse.Tracks[0];
                 player.Queue.Enqueue(track);
-                await ReplyAsync($"Na lista: {track.Title}");
+                var builder = new WolfBotEmbedBuilder()
+                 .WithTitle($"Na lista: {track.Title}")
+                 .WithCurrentTimestamp();
+                var embed = builder.Build();
+                await Context.Channel.SendMessageAsync(null, false, embed);
 
             }
             else
             {
                 var track = searchResponse.Tracks[0];
 
-                await player.PlayAsync(track);
+                var builder = new WolfBotEmbedBuilder()
+                  .WithTitle($"Tocando agora: {track.Title}")
+                  .AddField(" use !pause", "para pausar", true)
+                  .AddField(" use !resume", "para continuar", true)
+                  .WithCurrentTimestamp();
+                var embed = builder.Build();
+                await Context.Channel.SendMessageAsync(null, false, embed);
 
-                await ReplyAsync($"Tocando agora: {track.Title}");
+                await player.PlayAsync(track);
             }
 
         }
 
-
         //PROXIMA MUSICA
-        [Command("proxima")]
+        [Command("proxima", RunMode = RunMode.Async)]
         [Alias("prox", "next")]
         public async Task Skip()
         {
             var voiceState = Context.User as IVoiceState;
             if (voiceState?.VoiceChannel == null)
             {
-                await ReplyAsync("You must be connected to a voice channel!");
+                await ReplyAsync("Você precisa estar conectado em um canal de voz!");
                 return;
             }
             if (_lavaNode.HasPlayer(Context.Guild))
@@ -140,20 +144,26 @@ namespace WolfBotDiscord.Modules
                     return;
                 }
                 await player.SkipAsync();
-                await ReplyAsync($"Proxima! Tocando agora: {player.Track.Title}");
+                var builder = new WolfBotEmbedBuilder()
+                      .WithTitle($"Tocando agora: {player.Track.Title}")
+                      .AddField(" use !pause", "para pausar", true)
+                      .AddField(" use !resume", "para continuar", true)
+                      .WithCurrentTimestamp();
+                var embed = builder.Build();
+                await Context.Channel.SendMessageAsync(null, false, embed);
             }
         }
 
 
         //PAUSAR MUSICAS
-        [Command("pause")]
+        [Command("pause", RunMode = RunMode.Async)]
         [Alias("pausa")]
         public async Task Pause()
         {
             var voiceState = Context.User as IVoiceState;
             if (voiceState?.VoiceChannel == null)
             {
-                await ReplyAsync("You must be connected to a voice channel!");
+                await ReplyAsync("Você precisa estar conectado em um canal de voz!");
                 return;
             }
             if (_lavaNode.HasPlayer(Context.Guild))
@@ -170,20 +180,25 @@ namespace WolfBotDiscord.Modules
                 }
 
                 await player.PauseAsync();
-                await ReplyAsync($"Pausa na musica : {player.Track.Title}");
+                var builder = new WolfBotEmbedBuilder()
+                  .WithTitle($"Pausa em: {player.Track.Title}")
+                  .WithCurrentTimestamp();
+                var embed = builder.Build();
+                await Context.Channel.SendMessageAsync(null, false, embed);
+
             }
         }
 
 
         //RESUMIR A PARTIR DA PAUSA
-        [Command("resume")]
+        [Command("resume", RunMode = RunMode.Async)]
         [Alias("conti", "continuar")]
         public async Task Resume()
         {
             var voiceState = Context.User as IVoiceState;
             if (voiceState?.VoiceChannel == null)
             {
-                await ReplyAsync("You must be connected to a voice channel!");
+                await ReplyAsync("Você precisa estar conectado em um canal de voz!");
                 return;
             }
             if (_lavaNode.HasPlayer(Context.Guild))
@@ -200,11 +215,84 @@ namespace WolfBotDiscord.Modules
                 }
 
                 await player.ResumeAsync();
-                await ReplyAsync($"Continuando a musica : {player.Track.Title}");
+                var builder = new WolfBotEmbedBuilder()
+                  .WithTitle($"Continuando : {player.Track.Title}")
+                  .WithCurrentTimestamp();
+                var embed = builder.Build();
+                await Context.Channel.SendMessageAsync(null, false, embed);
             }
 
         }
 
+     
+        //PARAR DE TOCAR    
+        [Command("stop", RunMode = RunMode.Async)]
+        [Alias("parar")]
+        public async Task Stop()
+        {
+            var voiceState = Context.User as IVoiceState;
+            if (voiceState?.VoiceChannel == null)
+            {
+                await ReplyAsync("Você precisa estar conectado em um canal de voz!");
+                return;
+            }
+            if (_lavaNode.HasPlayer(Context.Guild))
+            {
+                var player = _lavaNode.GetPlayer(Context.Guild);
+                if (voiceState.VoiceChannel != player.VoiceChannel)
+                {
+                    await ReplyAsync("Nós precisamos estar no mesmo canal de voz!");
+                    return;
+                }
+                if (player.PlayerState == PlayerState.Stopped)
+                {
+                    await ReplyAsync("Musica pausada!");
+                }
+
+                await player.StopAsync();
+                var builder = new WolfBotEmbedBuilder()
+                  .WithTitle($"Musica parada: {player.Track.Title}")
+                  .WithCurrentTimestamp();
+                var embed = builder.Build();
+                await Context.Channel.SendMessageAsync(null, false, embed);
+
+            }
+        }
+
+
+
+
+  
+
+        public async Task TrackEnded(TrackEndedEventArgs args)
+        {
+            if (!args.Reason.ShouldPlayNext())
+            {
+                return;
+            }
+
+            if (!args.Player.Queue.TryDequeue(out var queueable))
+            {
+                await args.Player.TextChannel.SendMessageAsync("Playback Finished.");
+                return;
+            }
+
+            if (!(queueable is LavaTrack track))
+            {
+                await args.Player.TextChannel.SendMessageAsync("Next item in queue is not a track.");
+                return;
+            }
+
+            await args.Player.PlayAsync(track);
+            var builder = new WolfBotEmbedBuilder()
+                  .WithTitle($"Tocando agora: {track.Title}")
+                  .AddField(" use !pause", "para pausar", true)
+                  .AddField(" use !resume", "para continuar", true)
+                  .WithCurrentTimestamp();
+            var embed = builder.Build();
+            await Context.Channel.SendMessageAsync(null, false, embed);
+
+        }
     }
 }
 

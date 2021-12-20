@@ -81,15 +81,22 @@ namespace WolfBotDiscord.Modules
             var builder = new WolfBotEmbedBuilder()
               .WithThumbnailUrl(Context.Guild.IconUrl)
               .WithTitle($"Ajuda")
+              .AddField("Hello there!", "Eu sou o Frost, seu lobo ajudante!")
               .AddField("!ping", "retorna um Pong!")
               .AddField("!play + **musica ou podcast**", "procura musica ou pocast. Repetir o comando, add musicas para serem tocadas em seguida.")
               .AddField("!pause", "pause na musica.")
               .AddField("!resume", "resume a musica do momento do pause.")
               .AddField("!prox", "pula para a proxima musica da lista")
-              .AddField("!apagarmensagens + quantidade", "deleta mensagens do chat")
+              .AddField("!limpar + quantidade", "deleta mensagens do chat")
               .WithCurrentTimestamp();
             var embed = builder.Build();
             await Context.Channel.SendMessageAsync(null, false, embed);
+        }
+
+        [Command("melhorgame")]
+        public async Task BestGame()
+        {
+            await Context.Channel.SendMessageAsync("https://www.elderscrollsonline.com/en-us/home");
         }
 
     }

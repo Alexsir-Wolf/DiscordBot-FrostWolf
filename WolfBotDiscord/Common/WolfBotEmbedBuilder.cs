@@ -2,7 +2,7 @@
 
 namespace WolfBotDiscord.Common
 {    
-    // Embed Builder tema customizado   
+    // Embed Builder customizado   
     class WolfBotEmbedBuilder : EmbedBuilder 
     {
         public WolfBotEmbedBuilder()

@@ -17,7 +17,7 @@ namespace WolfBotDiscord
     {
         static async Task Main()
         {
-            var builder = new HostBuilder()
+             var builder = new HostBuilder()
                 .ConfigureAppConfiguration(x =>
                 {
                     var configuration = new ConfigurationBuilder()

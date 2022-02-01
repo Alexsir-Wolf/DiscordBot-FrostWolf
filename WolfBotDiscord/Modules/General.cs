@@ -11,7 +11,7 @@ namespace WolfBotDiscord.Modules
 {
     public class General : ModuleBase<SocketCommandContext>
     {
-        // Comando Ping, responde com Pong
+        #region COMANDO PING
         [Command("ping")]
         [Alias("p")] //apelido abreviado para o comando, pode ser add varios valores.         
         public async Task PingAsync()
@@ -24,22 +24,25 @@ namespace WolfBotDiscord.Modules
         {
             await Context.Channel.SendMessageAsync(DateTime.Now.ToString("dddd, dd MMMM yyyy"));
         }
+        #endregion
 
+        #region COMANDO INFOPMAÇÕES DO SERVER
         [Command("server")]
         public async Task Server()
         {
-            var builder = new EmbedBuilder()
+            var builder = new WolfBotEmbedBuilder()
                 .WithThumbnailUrl(Context.Guild.IconUrl)
                 .WithTitle($"Informações sobre {Context.Guild.Name}")
-                //.WithDescription("Informações sobre o servidor: ")               
-                .WithColor(new Color(0, 166, 255))
+                //.WithDescription("Informações sobre o servidor: ")   
                 .AddField("Criado em ", Context.Guild.CreatedAt.ToString("dd/MM/yyyy"), true)
-                .AddField("Contagem de membros ", (Context.Guild as SocketGuild).MemberCount + " membros", true)
-                .AddField("Online ", (Context.Guild as SocketGuild).Users.Where(x => x.Status != UserStatus.Online).Count() + " membros", true);
+                .AddField("Membros ", (Context.Guild as SocketGuild).MemberCount + " membros", true)
+                .AddField("Online ", (Context.Guild as SocketGuild).Users.Where(x => x.Status != UserStatus.Online).Count() + " membros", true);   
             var embed = builder.Build();
             await Context.Channel.SendMessageAsync(null, false, embed);
         }
+        #endregion
 
+        #region COMANDO INFORMAÇÕES DO USUÁRIO
         // Puxa info dos usuarios e mostra em um card
         [Command("info")]
         public async Task InfoAsync(SocketGuildUser socketGuildUser = null)
@@ -73,7 +76,9 @@ namespace WolfBotDiscord.Modules
                 await Context.Channel.SendMessageAsync(null, false, embed);
             }
         }
+        #endregion
 
+        #region COMANDO AJUDA NOS COMANDOS
         [Command("help")]
         [Alias("ajuda", "h")]
         public async Task HelpAsync()
@@ -92,12 +97,14 @@ namespace WolfBotDiscord.Modules
             var embed = builder.Build();
             await Context.Channel.SendMessageAsync(null, false, embed);
         }
+        #endregion
 
+        #region COMANDO MELHOR GAME
         [Command("melhorgame")]
         public async Task BestGame()
         {
             await Context.Channel.SendMessageAsync("https://www.elderscrollsonline.com/en-us/home");
         }
-
+        #endregion
     }
 }

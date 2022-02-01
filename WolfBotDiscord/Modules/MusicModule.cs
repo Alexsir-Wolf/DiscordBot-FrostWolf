@@ -1,11 +1,9 @@
 ﻿using Discord;
 using Discord.Commands;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Victoria;
 using Victoria.Enums;
-
 using Victoria.EventArgs;
 using WolfBotDiscord.Common;
 
@@ -20,8 +18,7 @@ namespace WolfBotDiscord.Modules
             _lavaNode = lavaNode;
         }
 
-
-        //JOIN
+        #region COMANDO JOIN
         [Command("Join", RunMode = RunMode.Async)]
         public async Task JoinAsync()
         {
@@ -48,9 +45,9 @@ namespace WolfBotDiscord.Modules
                 await ReplyAsync(exception.Message);
             }
         }
+        #endregion
 
-
-        // SAIR DE SALA/CHAT
+        #region COMANDO PARA SAIR DA SALA
         [Command("leave", RunMode = RunMode.Async)]
         [Alias("sair")]
         public async Task Leave()
@@ -69,9 +66,9 @@ namespace WolfBotDiscord.Modules
                 }
             }
         }
+        #endregion
 
-
-        //PLAY + AUTO JOIN  
+        #region PLAY E AUTO JOIN, REPETIR COMANDO ADD MUSICAS NA LISTA 
         [Command("Play", RunMode = RunMode.Async)]
         public async Task PlayAsync([Remainder] string query)
         {
@@ -83,29 +80,28 @@ namespace WolfBotDiscord.Modules
             }
 
             var searchResponse = await _lavaNode.SearchYouTubeAsync(query);
-            if (searchResponse.LoadStatus == LoadStatus.LoadFailed ||
-                searchResponse.LoadStatus == LoadStatus.NoMatches)
+            if (searchResponse.LoadStatus == LoadStatus.LoadFailed || searchResponse.LoadStatus == LoadStatus.NoMatches)
             {
                 await ReplyAsync($"Não consegui encontrar nada para `{ query}`.");
                 return;
             }
+
             var player = _lavaNode.GetPlayer(Context.Guild);
 
             if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused)
             {
                 var track = searchResponse.Tracks[0];
                 player.Queue.Enqueue(track);
+
                 var builder = new WolfBotEmbedBuilder()
                  .WithTitle($"Na lista: {track.Title}")
                  .WithCurrentTimestamp();
                 var embed = builder.Build();
                 await Context.Channel.SendMessageAsync(null, false, embed);
-
             }
             else
             {
                 var track = searchResponse.Tracks[0];
-
                 var builder = new WolfBotEmbedBuilder()
                   .WithTitle($"Tocando agora: {track.Title}")
                   .AddField(" use !pause", "para pausar", true)
@@ -116,10 +112,10 @@ namespace WolfBotDiscord.Modules
 
                 await player.PlayAsync(track);
             }
-
         }
+        #endregion
 
-        //PROXIMA MUSICA
+        #region COMANDO PROXIMA MUSICA DA LISTA
         [Command("proxima", RunMode = RunMode.Async)]
         [Alias("prox", "next")]
         public async Task Skip()
@@ -153,9 +149,9 @@ namespace WolfBotDiscord.Modules
                 await Context.Channel.SendMessageAsync(null, false, embed);
             }
         }
+        #endregion
 
-
-        //PAUSAR MUSICAS
+        #region COMANDO PAUSAR MUSICAS
         [Command("pause", RunMode = RunMode.Async)]
         [Alias("pausa")]
         public async Task Pause()
@@ -178,19 +174,22 @@ namespace WolfBotDiscord.Modules
                 {
                     await ReplyAsync("Musica pausada!");
                 }
-
+                if (player.Queue.Count == 0)
+                {
+                    await ReplyAsync("Não há mais musicas para pausar!");
+                    return;
+                }
                 await player.PauseAsync();
                 var builder = new WolfBotEmbedBuilder()
                   .WithTitle($"Pausa em: {player.Track.Title}")
                   .WithCurrentTimestamp();
                 var embed = builder.Build();
                 await Context.Channel.SendMessageAsync(null, false, embed);
-
             }
         }
+        #endregion
 
-
-        //RESUMIR A PARTIR DA PAUSA
+        #region COMANDO RESUMIR MUSICAS PAUSADAS
         [Command("resume", RunMode = RunMode.Async)]
         [Alias("conti", "continuar")]
         public async Task Resume()
@@ -221,11 +220,10 @@ namespace WolfBotDiscord.Modules
                 var embed = builder.Build();
                 await Context.Channel.SendMessageAsync(null, false, embed);
             }
-
         }
+        #endregion
 
-     
-        //PARAR DE TOCAR    
+        #region COMANDO PARAR MSUICAS  
         [Command("stop", RunMode = RunMode.Async)]
         [Alias("parar")]
         public async Task Stop()
@@ -248,6 +246,11 @@ namespace WolfBotDiscord.Modules
                 {
                     await ReplyAsync("Musica pausada!");
                 }
+                if (player.Queue.Count == 0)
+                {
+                    await ReplyAsync("Não há mais musicas para pausar!");
+                    return;
+                }
 
                 await player.StopAsync();
                 var builder = new WolfBotEmbedBuilder()
@@ -255,46 +258,12 @@ namespace WolfBotDiscord.Modules
                   .WithCurrentTimestamp();
                 var embed = builder.Build();
                 await Context.Channel.SendMessageAsync(null, false, embed);
-
             }
         }
-
-
-
-
-  
-
-        public async Task TrackEnded(TrackEndedEventArgs args)
-        {
-            if (!args.Reason.ShouldPlayNext())
-            {
-                return;
-            }
-
-            if (!args.Player.Queue.TryDequeue(out var queueable))
-            {
-                await args.Player.TextChannel.SendMessageAsync("Playback Finished.");
-                return;
-            }
-
-            if (!(queueable is LavaTrack track))
-            {
-                await args.Player.TextChannel.SendMessageAsync("Next item in queue is not a track.");
-                return;
-            }
-
-            await args.Player.PlayAsync(track);
-            var builder = new WolfBotEmbedBuilder()
-                  .WithTitle($"Tocando agora: {track.Title}")
-                  .AddField(" use !pause", "para pausar", true)
-                  .AddField(" use !resume", "para continuar", true)
-                  .WithCurrentTimestamp();
-            var embed = builder.Build();
-            await Context.Channel.SendMessageAsync(null, false, embed);
-
-        }
+        #endregion
     }
 }
+
 
 
 

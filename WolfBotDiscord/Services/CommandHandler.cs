@@ -8,6 +8,8 @@ using System;
 using System.Threading;
 using System.Reflection;
 using Victoria;
+using Victoria.EventArgs;
+using WolfBotDiscord.Common;
 
 namespace WolfBotDiscord.Services
 {
@@ -33,6 +35,7 @@ namespace WolfBotDiscord.Services
         {
             _client.MessageReceived += OnMessegeReceived;
             _service.CommandExecuted += OnCommandExecuted;
+            _lavaNode.OnTrackEnded += OnTrackEnded;
             _client.Ready += OnReadyAsync;
 
             await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
@@ -65,6 +68,38 @@ namespace WolfBotDiscord.Services
 
             var context = new SocketCommandContext(_client, message);
             await _service.ExecuteAsync(context, argPos, _provider);
-        }     
+        }
+
+        // AUTO PLAY
+        public async Task OnTrackEnded(TrackEndedEventArgs args)
+        {
+            if (!args.Reason.ShouldPlayNext())
+            {
+                return;
+            }
+
+            var player = args.Player;
+
+            if (!args.Player.Queue.TryDequeue(out var queueable))
+            {
+                await args.Player.TextChannel.SendMessageAsync("Fim da Playlist");        
+                return;
+            }
+
+            if (!(queueable is LavaTrack track))
+            {
+                await args.Player.TextChannel.SendMessageAsync("Next item in queue is not a track.");
+                return;
+            }
+
+            await args.Player.PlayAsync(track);
+            var builder = new WolfBotEmbedBuilder()
+                  .WithTitle($"Tocando agora: {track.Title}")
+                  .AddField(" use !pause", "para pausar", true)
+                  .AddField(" use !resume", "para continuar", true)
+                  .WithCurrentTimestamp();
+            var embed = builder.Build();
+            await player.TextChannel.SendMessageAsync(null, false, embed);
+        }
     }
 }

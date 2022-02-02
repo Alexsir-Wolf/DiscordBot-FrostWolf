@@ -9,11 +9,11 @@ using WolfBotDiscord.Common;
 
 namespace WolfBotDiscord.Modules
 {
-    public class MusicModule : ModuleBase<SocketCommandContext>
+    public class Music : ModuleBase<SocketCommandContext>
     {
         private readonly LavaNode _lavaNode;
 
-        public MusicModule(LavaNode lavaNode)
+        public Music(LavaNode lavaNode)
         {
             _lavaNode = lavaNode;
         }
@@ -73,6 +73,7 @@ namespace WolfBotDiscord.Modules
         public async Task PlayAsync([Remainder] string query)
         {
             var voiceState = Context.User as IVoiceState;
+
             if (!_lavaNode.HasPlayer(Context.Guild))
             {
                 await _lavaNode.JoinAsync(voiceState.VoiceChannel, Context.Channel as ITextChannel);
@@ -174,7 +175,7 @@ namespace WolfBotDiscord.Modules
                 {
                     await ReplyAsync("Musica pausada!");
                 }
-                if (player.Queue.Count == 0)
+                if (player.Queue == null)
                 {
                     await ReplyAsync("Não há mais musicas para pausar!");
                     return;
@@ -246,7 +247,7 @@ namespace WolfBotDiscord.Modules
                 {
                     await ReplyAsync("Musica pausada!");
                 }
-                if (player.Queue.Count == 0)
+                if (player.Queue == null)
                 {
                     await ReplyAsync("Não há mais musicas para pausar!");
                     return;

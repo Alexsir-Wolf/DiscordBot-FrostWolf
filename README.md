@@ -1,6 +1,6 @@
 <h3>Frost Wolf Bot</h3>
 
-<img height="50em" src="https://cdn.discordapp.com/attachments/794342251244945473/922653736936046602/unknown.png"/>
+<img height="50em" src="https://cdn.discordapp.com/attachments/969709535881228348/990698451979366410/unknown.png"/>
 <p>Bot para servidores do discord</p>
 
 ## Para Funcionar o bot
